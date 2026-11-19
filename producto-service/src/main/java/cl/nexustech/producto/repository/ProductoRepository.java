@@ -10,7 +10,8 @@ public interface ProductoRepository extends JpaRepository<Producto, Long> {
 
     Optional<Producto> findByCodigo(String codigo);
 
-    long countByCategoriaId(Long categoriaId);
+    // "_" fuerza a recorrer la relación categoria.id (Producto también tiene getCategoriaId())
+    long countByCategoria_Id(Long categoriaId);
 
     // Descuenta solo si alcanza el stock. Devuelve 0 si no se pudo, así dos compras
     // simultáneas nunca dejan el stock negativo.

@@ -56,7 +56,7 @@ public class CategoriaService {
     @Transactional
     public void eliminar(Long id) {
         Categoria categoria = obtener(id);
-        long enUso = productos.countByCategoriaId(id);
+        long enUso = productos.countByCategoria_Id(id);
         if (enUso > 0)
             throw new ResponseStatusException(CONFLICT,
                     "No se puede eliminar \"" + categoria.getNombre() + "\": tiene " + enUso + " producto(s).");
