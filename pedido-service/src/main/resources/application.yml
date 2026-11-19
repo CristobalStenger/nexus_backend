@@ -1,0 +1,38 @@
+server:
+  port: ${PORT:8083}
+
+spring:
+  application:
+    name: pedido-service
+  # En local las variables se pueden dejar en un archivo .env (ver .env.example)
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER:pedido_app}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 3
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate   # las tablas las crea Flyway; Hibernate solo comprueba que calcen
+    properties:
+      hibernate:
+        default_schema: pedido
+  flyway:
+    schemas: pedido
+    default-schema: pedido
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # El claim "rol" del token se transforma en ROLE_<rol> (ej. ROLE_Administrador)
+          authorities-claim-name: rol
+          authority-prefix: ROLE_
+
+nexus:
+  jwt:
+    secret: ${JWT_SECRET}
+  # pedido-service consulta y descuenta el stock directamente en producto-service
+  producto-url: ${PRODUCTO_URL:http://localhost:8082}

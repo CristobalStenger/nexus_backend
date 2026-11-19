@@ -1,0 +1,67 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: api-gateway
+  # En local las variables se pueden dejar en un archivo .env (ver .env.example)
+  config:
+    import: optional:file:.env[.properties]
+  cloud:
+    gateway:
+      server:
+        webflux:
+          httpclient:
+            connect-timeout: 10000
+            # En Cloud Run un servicio sin uso se apaga y tarda unos segundos en despertar
+            response-timeout: 60s
+          routes:
+            - id: usuario-service
+              uri: ${USUARIO_URL:http://localhost:8081}
+              predicates:
+                - Path=/api/v1/auth/**,/api/v1/usuarios/**
+            - id: producto-service
+              uri: ${PRODUCTO_URL:http://localhost:8082}
+              predicates:
+                - Path=/api/v1/productos/**,/api/v1/categorias/**
+            - id: pedido-service
+              uri: ${PEDIDO_URL:http://localhost:8083}
+              predicates:
+                - Path=/api/v1/boletas/**,/api/v1/cupones/**
+            # Documentación OpenAPI de cada servicio, para el Swagger unificado
+            - id: docs-usuario
+              uri: ${USUARIO_URL:http://localhost:8081}
+              predicates:
+                - Path=/docs/usuario
+              filters:
+                - SetPath=/v3/api-docs
+            - id: docs-producto
+              uri: ${PRODUCTO_URL:http://localhost:8082}
+              predicates:
+                - Path=/docs/producto
+              filters:
+                - SetPath=/v3/api-docs
+            - id: docs-pedido
+              uri: ${PEDIDO_URL:http://localhost:8083}
+              predicates:
+                - Path=/docs/pedido
+              filters:
+                - SetPath=/v3/api-docs
+
+nexus:
+  jwt:
+    secret: ${JWT_SECRET}
+  # Orígenes del frontend que pueden llamar a la API (separados por coma)
+  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+
+# Swagger unificado: /swagger-ui.html (se elige el servicio arriba a la derecha)
+springdoc:
+  swagger-ui:
+    urls-primary-name: usuario-service
+    urls:
+      - name: usuario-service
+        url: /docs/usuario
+      - name: producto-service
+        url: /docs/producto
+      - name: pedido-service
+        url: /docs/pedido
