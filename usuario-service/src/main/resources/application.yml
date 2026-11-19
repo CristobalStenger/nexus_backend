@@ -1,0 +1,37 @@
+server:
+  port: ${PORT:8081}
+
+spring:
+  application:
+    name: usuario-service
+  # En local las variables se pueden dejar en un archivo .env (ver .env.example)
+  config:
+    import: optional:file:.env[.properties]
+  datasource:
+    url: ${DB_URL}
+    username: ${DB_USER:usuario_app}
+    password: ${DB_PASSWORD}
+    hikari:
+      maximum-pool-size: 3
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate   # las tablas las crea Flyway; Hibernate solo comprueba que calcen
+    properties:
+      hibernate:
+        default_schema: usuario
+  flyway:
+    schemas: usuario
+    default-schema: usuario
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          # El claim "rol" del token se transforma en ROLE_<rol> (ej. ROLE_Administrador)
+          authorities-claim-name: rol
+          authority-prefix: ROLE_
+
+nexus:
+  jwt:
+    secret: ${JWT_SECRET}
+    minutos: ${JWT_MINUTOS:120}   # duración del token
