@@ -73,7 +73,7 @@ class CategoriaServiceTest {
         categoria.setId(1L);
         categoria.setNombre("Componentes");
         when(categorias.findById(1L)).thenReturn(Optional.of(categoria));
-        when(productos.countByCategoriaId(1L)).thenReturn(3L);
+        when(productos.countByCategoria_Id(1L)).thenReturn(3L);
 
         assertThatThrownBy(() -> servicio.eliminar(1L))
                 .hasMessageContaining("No se puede eliminar \"Componentes\": tiene 3 producto(s).");
