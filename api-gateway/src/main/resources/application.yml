@@ -51,8 +51,9 @@ spring:
 nexus:
   jwt:
     secret: ${JWT_SECRET}
-  # Orígenes del frontend que pueden llamar a la API (separados por coma)
-  frontend-url: ${FRONTEND_URL:http://localhost:5173}
+  # Orígenes del frontend que pueden llamar a la API (separados por coma).
+  # Por defecto, Vite en local: npm run dev (5173) y npm run preview (4173)
+  frontend-url: ${FRONTEND_URL:http://localhost:5173,http://localhost:4173}
 
 # Swagger unificado: /swagger-ui.html (se elige el servicio arriba a la derecha)
 springdoc:
