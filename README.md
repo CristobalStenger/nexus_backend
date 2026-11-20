@@ -222,7 +222,7 @@ Reglas del checkout (las mismas que tiene hoy el frontend):
 
 ## Pruebas
 
-- **Unitarias y de seguridad** (`./mvnw test` en cada servicio, 46 en total). No necesitan base de datos. Cubren:
+- **Unitarias y de seguridad** (`./mvnw test` en cada servicio, 48 en total). No necesitan base de datos. Cubren:
   - Lógica de negocio con Mockito: cálculo de totales, cupones, rechazos, compensación de stock, RUN con dígito verificador, BCrypt, contenido del JWT, slugs y validaciones.
   - Permisos por rol con MockMvc.
   - CORS y JWT en el gateway.
@@ -265,10 +265,16 @@ gcloud config set run/region southamerica-east1
 gcloud services enable run.googleapis.com cloudbuild.googleapis.com artifactregistry.googleapis.com secretmanager.googleapis.com
 ```
 
-Secretos: el JWT y las 3 contraseñas de Neon. Cada comando pide el valor y lo lee sin mostrarlo:
+Secretos. El del JWT se genera al azar (64 caracteres; con menos de 32 los servicios no arrancan):
 
 ```bash
-for s in jwt-secret db-pass-usuario db-pass-producto db-pass-pedido; do read -rsp "$s: " v; echo; printf '%s' "$v" | gcloud secrets create $s --data-file=-; done
+openssl rand -base64 48 | tr -d '\n' | gcloud secrets create jwt-secret --data-file=-
+```
+
+Las 3 contraseñas de Neon: cada comando pide el valor y lo lee sin mostrarlo.
+
+```bash
+for s in db-pass-usuario db-pass-producto db-pass-pedido; do read -rsp "$s: " v; echo; printf '%s' "$v" | gcloud secrets create $s --data-file=-; done
 ```
 
 Permisos para la cuenta de servicio con la que corren y se construyen los servicios (leer secretos y compilar desde el código):
@@ -278,7 +284,7 @@ CUENTA="$(gcloud projects describe $(gcloud config get-value project) --format='
 for rol in roles/secretmanager.secretAccessor roles/run.builder; do gcloud projects add-iam-policy-binding $(gcloud config get-value project) --member="serviceAccount:$CUENTA" --role=$rol --condition=None; done
 ```
 
-Despliegue de los 4 servicios. Cloud Run compila cada carpeta con Maven, sin Dockerfile. `DB_URL` es la URL de Neon del paso 1:
+Despliegue de los 4 servicios. Cloud Run compila cada carpeta con Maven, sin Dockerfile. `DB_URL` es la URL de Neon del paso 1. La primera vez, gcloud pregunta si crea el repositorio de Artifact Registry donde guarda las imágenes: responde que sí.
 
 ```bash
 DB_URL='jdbc:postgresql://ep-xxxx.sa-east-1.aws.neon.tech/neondb?sslmode=require'
@@ -325,12 +331,19 @@ for s in api-gateway usuario-service producto-service pedido-service; do gcloud 
 ```
 
 ### 3. Frontend en Vercel
-- En Vercel, define la variable `VITE_API_URL` con la URL del api-gateway. Se lee al compilar, así que si cambia hay que volver a desplegar.
-- Agrega `vercel.json` con un *rewrite* a `/index.html`, para que las rutas de React Router no den 404.
-- Autoriza el dominio de Vercel en el CORS del gateway. Si son varios orígenes, van separados por coma (el `^@^` le indica a gcloud que no corte en las comas):
+- Importa el repositorio `nexus_frontend` con **Root Directory** `nexustech-react`. Vite se detecta solo y el repositorio ya trae `vercel.json` (todas las rutas responden `index.html`).
+- Define la variable `VITE_API_URL` con la URL del api-gateway. Se lee al compilar, así que si cambia hay que volver a desplegar.
+- Autoriza el dominio de Vercel en el CORS del gateway (solo el dominio de producción; las URL de vista previa de Vercel quedan bloqueadas). Si son varios orígenes, van separados por coma (el `^@^` le indica a gcloud que no corte en las comas):
   ```bash
-  gcloud run services update api-gateway --update-env-vars "^@^FRONTEND_URL=https://tu-app.vercel.app,http://localhost:5173"
+  gcloud run services update api-gateway --update-env-vars "^@^FRONTEND_URL=https://tu-app.vercel.app"
   ```
+
+### 4. Antes de abrir el sitio
+- [ ] `./scripts/prueba-api.sh` contra la URL del gateway termina en "Todo OK".
+- [ ] El frontend en Vercel carga el catálogo y permite iniciar sesión (si dice "No se pudo conectar", revisa `VITE_API_URL` y `FRONTEND_URL`).
+- [ ] `FRONTEND_URL` tiene solo el dominio de Vercel (sin `localhost`).
+- [ ] Alerta de presupuesto creada e instancias mínimas en 0 fuera de la presentación.
+- [ ] Después de la evaluación, cambia la contraseña de `admin@duoc.cl` desde *Mi perfil*: `admin123` está publicada en este README y en la pantalla de login.
 
 ## Estructura del repositorio
 
