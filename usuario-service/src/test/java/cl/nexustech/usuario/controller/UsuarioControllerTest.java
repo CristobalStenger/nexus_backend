@@ -2,7 +2,10 @@ package cl.nexustech.usuario.controller;
 
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.jwt;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -15,6 +18,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
@@ -68,5 +72,22 @@ class UsuarioControllerTest {
                         .authorities(new SimpleGrantedAuthority("ROLE_Cliente"))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.tipo").value("Cliente"));
+    }
+
+    @Test
+    void alEditarElPerfilUnaClaveVaciaEsValidaYUnaCortaNo() throws Exception {
+        when(servicio.actualizarPerfil(eq(3L), any())).thenReturn(cliente());
+        String perfil = """
+                {"run":"21456789K","nombre":"Pedro","apellidos":"Soto","correo":"cliente@gmail.com","clave":"%s",
+                 "region":"Región Metropolitana","comuna":"Providencia","direccion":"Calle 1"}""";
+        var sesion = jwt().jwt(j -> j.subject("3")).authorities(new SimpleGrantedAuthority("ROLE_Cliente"));
+
+        mvc.perform(put("/api/v1/usuarios/me").with(sesion).contentType(MediaType.APPLICATION_JSON)
+                        .content(perfil.formatted("")))
+                .andExpect(status().isOk());
+        mvc.perform(put("/api/v1/usuarios/me").with(sesion).contentType(MediaType.APPLICATION_JSON)
+                        .content(perfil.formatted("abc")))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errores.clave").value("La contraseña debe tener entre 4 y 10 caracteres."));
     }
 }
