@@ -207,6 +207,10 @@ Reglas del checkout (las mismas que tiene hoy el frontend):
 4. Prueba:
    - Swagger: <http://localhost:8080/swagger-ui.html>
    - Prueba completa de la API: `./scripts/prueba-api.sh` (ver más abajo).
+5. Frontend ([`nexus_frontend`](https://github.com/CristobalStenger/nexus_frontend)): en
+   `nexustech-react`, `npm ci` y `npm run dev`. Por defecto llama al gateway en
+   `http://localhost:8080` (variable `VITE_API_URL`), y el gateway acepta los orígenes de Vite
+   `http://localhost:5173` y `http://localhost:4173` (variable `FRONTEND_URL`).
 
 **Usuarios de prueba**
 

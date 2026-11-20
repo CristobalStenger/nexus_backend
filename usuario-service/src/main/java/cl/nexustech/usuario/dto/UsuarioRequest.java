@@ -29,7 +29,8 @@ public record UsuarioRequest(
                 message = "Solo se aceptan correos @duoc.cl, @profesor.duoc.cl o @gmail.com")
         String correo,
 
-        @Size(min = 4, max = 10, message = "La contraseña debe tener entre 4 y 10 caracteres.")
+        // Vacía se acepta: al editar significa "mantener la contraseña actual"
+        @Pattern(regexp = "^(.{4,10})?$", message = "La contraseña debe tener entre 4 y 10 caracteres.")
         String clave,
 
         @PastOrPresent(message = "Ingresa una fecha de nacimiento válida.")
