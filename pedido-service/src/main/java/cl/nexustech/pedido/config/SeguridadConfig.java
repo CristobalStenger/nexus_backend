@@ -41,7 +41,11 @@ public class SeguridadConfig {
 
     @Bean
     SecretKey claveJwt(@Value("${nexus.jwt.secret}") String secreto) {
-        return new SecretKeySpec(secreto.getBytes(StandardCharsets.UTF_8), "HmacSHA256");
+        byte[] bytes = secreto.getBytes(StandardCharsets.UTF_8);
+        // Sin esto el servicio arranca igual y recién falla al firmar o validar el primer token
+        if (bytes.length < 32)
+            throw new IllegalStateException("JWT_SECRET debe tener al menos 32 caracteres (HS256).");
+        return new SecretKeySpec(bytes, "HmacSHA256");
     }
 
     @Bean

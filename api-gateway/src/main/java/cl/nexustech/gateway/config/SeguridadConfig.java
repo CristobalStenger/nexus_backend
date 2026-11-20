@@ -36,9 +36,11 @@ public class SeguridadConfig {
 
     @Bean
     ReactiveJwtDecoder jwtDecoder(@Value("${nexus.jwt.secret}") String secreto) {
-        return NimbusReactiveJwtDecoder
-                .withSecretKey(new SecretKeySpec(secreto.getBytes(StandardCharsets.UTF_8), "HmacSHA256"))
-                .build();
+        byte[] bytes = secreto.getBytes(StandardCharsets.UTF_8);
+        // Sin esto el servicio arranca igual y recién falla al firmar o validar el primer token
+        if (bytes.length < 32)
+            throw new IllegalStateException("JWT_SECRET debe tener al menos 32 caracteres (HS256).");
+        return NimbusReactiveJwtDecoder.withSecretKey(new SecretKeySpec(bytes, "HmacSHA256")).build();
     }
 
     // CORS solo aquí: si los servicios también lo agregaran, el navegador vería cabeceras duplicadas
