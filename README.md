@@ -194,12 +194,22 @@ Reglas del checkout (las mismas que tiene hoy el frontend):
 
 **Requisitos:** JDK 21 y PostgreSQL. No hace falta instalar Maven: cada servicio trae `./mvnw` (`mvnw.cmd` en Windows). También se puede usar una rama de Neon en vez de un PostgreSQL local.
 
-1. Crea la base y prepara los schemas:
+1. Crea la base y prepara los schemas. Ambos comandos piden la contraseña del usuario
+   `postgres`; en Windows también puedes crear la base `nexus` en pgAdmin y ejecutar ahí
+   `db/crear-schemas.sql` con el Query Tool.
    ```bash
-   createdb nexus
-   psql -d nexus -f db/crear-schemas.sql
+   createdb -h localhost -U postgres nexus
    ```
-2. En cada servicio, copia `.env.example` a `.env` y completa los valores. El `.env` no se sube a GitHub. El `JWT_SECRET` debe ser el **mismo en los 4 servicios** y tener al menos 32 caracteres.
+   ```bash
+   psql -h localhost -U postgres -d nexus -f db/crear-schemas.sql
+   ```
+2. En cada servicio, copia `.env.example` a `.env` (el `.env` no se sube a GitHub). Los valores
+   de ejemplo ya calzan con `db/crear-schemas.sql`, así que en local funcionan sin cambios:
+   ```bash
+   for s in usuario-service producto-service pedido-service api-gateway; do cp $s/.env.example $s/.env; done
+   ```
+   Para usar Neon cambia `DB_URL` y las contraseñas. El `JWT_SECRET` debe ser el **mismo en los
+   4 servicios** y tener al menos 32 caracteres.
 3. Levanta los servicios, cada uno en su propia terminal, en este orden: usuario, producto, pedido y gateway.
    ```bash
    cd usuario-service && ./mvnw spring-boot:run
