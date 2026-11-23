@@ -5,6 +5,13 @@ Backend de la tienda **NexusTech**: 4 microservicios en **Spring Boot (Java 21, 
 - Frontend (React + Vite): <https://github.com/CristobalStenger/nexus_frontend>
 - Nube: Google Cloud Run (backend), Neon (base de datos) y Vercel (frontend)
 
+**En producción:**
+
+- Sitio (Vercel): <https://nexus-frontend-nu-gray.vercel.app>
+- API Gateway (Google Cloud Run, `southamerica-east1`): <https://api-gateway-ujq3ppjm5a-rj.a.run.app>
+- Swagger unificado: <https://api-gateway-ujq3ppjm5a-rj.a.run.app/swagger-ui.html>
+- Base de datos: Neon, AWS São Paulo (`sa-east-1`)
+
 ## Arquitectura
 
 ```mermaid
@@ -298,7 +305,7 @@ Despliegue de los 4 servicios. Cloud Run compila cada carpeta con Maven, sin Doc
 
 ```bash
 DB_URL='jdbc:postgresql://ep-xxxx.sa-east-1.aws.neon.tech/neondb?sslmode=require'
-COMUNES="--allow-unauthenticated --memory 1Gi --cpu-boost --max-instances 2"
+COMUNES="--allow-unauthenticated --memory 1Gi --cpu-boost --max-instances 2 --set-build-env-vars GOOGLE_RUNTIME_VERSION=21"
 ```
 
 ```bash
