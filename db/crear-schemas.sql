@@ -15,7 +15,9 @@
 -- ============================================================
 
 -- 1) Roles de conexión. Cambia las contraseñas por unas largas y aleatorias
---    (o crea los roles desde la consola de Neon: Roles > New role).
+--    (Neon rechaza las débiles; sirve SELECT gen_random_uuid();).
+--    Créalos con este SQL, no desde la consola de Neon (Roles > New role):
+--    esos roles quedan en neon_superuser y podrían leer los schemas de los demás.
 CREATE ROLE usuario_app  LOGIN PASSWORD 'cambia-esta-clave-usuario';
 CREATE ROLE producto_app LOGIN PASSWORD 'cambia-esta-clave-producto';
 CREATE ROLE pedido_app   LOGIN PASSWORD 'cambia-esta-clave-pedido';
